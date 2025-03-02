@@ -100,6 +100,30 @@ This will run your Hono app locally in Cloudflare's development environment.
 wrangler deploy
 ```
 
+### Testing Cloudflare App via wscat
+
+###
+
+```bash
+npm install -g wscat
+```
+
+```bash
+wscat -H "Authorization: Bearer secret_token_from_2.3" -c wss://worker_cloudflare_host/ws/your_session_id
+```
+
+```json
+{ "action": "start", "character": "Santa" }
+```
+
+```bash
+curl -H "Authorization: Bearer secret_token_from_2.3" "https://worker_cloudflare_host/history/your_session_id?pretty"
+```
+
+```bash
+curl -H "Authorization: Bearer secret_token_from_2.3" "https://worker_cloudflare_host/characters/active?pretty"
+```
+
 ## 🔒 Security Notes
 
 - All endpoints requiring authentication use **JWT** passed via `Authorization: Bearer <token>` header.
