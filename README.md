@@ -55,8 +55,9 @@ wscat -H "Authorization: Bearer honoiscool" -c ws://localhost:8787/ws/hello_sess
 ```
 
 ```json
-{ "action": "start" } // Joi will be by default
-```
+{ "action": "start" }
+``` 
+For this case: Joi will be by default
 
 #### GET current sessions for current user
 ```bash
