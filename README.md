@@ -27,6 +27,7 @@ The project uses:
 nvm use # if you use NVM or select node v22 manually
 npm install
 cp .dev.vars.example .dev.vars
+# TODO: npm test (WIP)
 ```
 
 ### 1.2 Start development server
