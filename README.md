@@ -40,7 +40,7 @@ npm install -g wscat
 ```
 
 ```bash
-wscat -H "Authorization: Bearer honoiscool" -c ws://localhost:8787/ws/your_session_id
+wscat -H "Authorization: Bearer honoiscool" -c ws://localhost:8787/ws/hello_session
 ```
 
 ```json
@@ -48,12 +48,21 @@ wscat -H "Authorization: Bearer honoiscool" -c ws://localhost:8787/ws/your_sessi
 ```
 
 ```bash
-curl -H "Authorization: Bearer honoiscool" "http://localhost:8787/history/your_session_id?pretty"
+curl -H "Authorization: Bearer honoiscool" "http://localhost:8787/sessions?pretty"
 ```
 
 ```bash
-curl -H "Authorization: Bearer honoiscool" "http://localhost:8787/characters/active?pretty"
+curl -H "Authorization: Bearer honoiscool" "http://localhost:8787/sessions/:sessionIdFromResponseAbove?pretty"
 ```
+
+```bash
+curl -H "Authorization: Bearer honoiscool" "http://localhost:8787/sessions/:sessionIdFromResponseAbove/characters/active?pretty"
+```
+
+```bash
+curl -H "Authorization: Bearer honoiscool" "http://localhost:8787/logs?pretty"
+```
+
 
 ## 2. Set up Cloudflare environment
 
@@ -64,7 +73,6 @@ Create the required Cloudflare KV namespaces:
 ```bash
 wrangler kv:namespace create "COMMAND_INC_LOGS"
 wrangler kv:namespace create "COMMAND_INC_HISTORY"
-wrangler kv:namespace create "COMMAND_INC_CHARACTERS"
 ```
 
 Set your IDs for KVs to `wrangler.jsonc`
@@ -73,7 +81,6 @@ Set your IDs for KVs to `wrangler.jsonc`
 "kv_namespaces": [
   { "binding": "COMMAND_INC_LOGS", "id": "COMMAND_INC_LOGS_ID" },
   { "binding": "COMMAND_INC_HISTORY", "id": "COMMAND_INC_HISTORY_ID" },
-  { "binding": "COMMAND_INC_CHARACTERS", "id": "COMMAND_INC_HISTORY_ID" },
 ],
 ```
 
@@ -109,7 +116,7 @@ npm install -g wscat
 ```
 
 ```bash
-wscat -H "Authorization: Bearer secret_token_from_2.3" -c wss://worker_cloudflare_host/ws/your_session_id
+wscat -H "Authorization: Bearer secret_token_from_2.3" -c wss://worker_cloudflare_host/ws/hello_cloud_session
 ```
 
 ```json
@@ -117,11 +124,19 @@ wscat -H "Authorization: Bearer secret_token_from_2.3" -c wss://worker_cloudflar
 ```
 
 ```bash
-curl -H "Authorization: Bearer secret_token_from_2.3" "https://worker_cloudflare_host/history/your_session_id?pretty"
+curl -H "Authorization: Bearer secret_token_from_2.3" "https://worker_cloudflare_host/sessions?pretty"
 ```
 
 ```bash
-curl -H "Authorization: Bearer secret_token_from_2.3" "https://worker_cloudflare_host/characters/active?pretty"
+curl -H "Authorization: Bearer honoiscool" "https://worker_cloudflare_host/sessions/:sessionIdFromResponseAbove?pretty"
+```
+
+```bash
+curl -H "Authorization: Bearer honoiscool" "https://worker_cloudflare_host/sessions/:sessionIdFromResponseAbove/characters/active?pretty"
+```
+
+```bash
+curl -H "Authorization: Bearer honoiscool" "https://worker_cloudflare_host/logs?pretty"
 ```
 
 ## 🔒 Security Notes

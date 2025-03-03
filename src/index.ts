@@ -7,13 +7,12 @@ import { currentUserMiddleware } from './middlewares/currentUserMiddleware';
 import { requestLogger } from './common/requestLogger';
 
 import dispatcherDO from './dos/DispatcherDO';
-import fetchChatHistory from './services/fetchChatHistory';
 
 import Bindings from './interfaces/bindings';
 import Variables from './interfaces/variables';
 import { User } from './models/User';
-import fetchChatLatest from './services/fetchChatLatest';
-import fetchActiveCharacters from './services/fetchActiveCharacters';
+import { getActiveCharacters } from './services/getActiveCharacters';
+import fetchLogs from './services/fetchLogs';
 
 const app = new Hono<{ Variables: Variables; Bindings: Bindings }>();
 
@@ -21,42 +20,51 @@ app.use(prettyJSON());
 app.use('*', requestLogger);
 app.use('*', currentUserMiddleware);
 
-app.get('/ws/:sessionId', (c) => {
-  return dispatcherDO(c);
+app.get('/ws/:sessionId', (context) => {
+  return dispatcherDO(context);
 });
 
-app.get('/history/:sessionId', async (c) => {
-  const sessionId = c.req.param('sessionId');
-  const currentUser = c.get('currentUser') as User;
+// Sessions for history
+app.get('/sessions', async (context) => {
+  const currentUser = context.get('currentUser') as User;
+  await currentUser.loadSessionsFromKV(context);
 
-  const durableId = c.env.COMMAND_INC_DO.idFromName(`${currentUser.id}_${sessionId}`);
+  return context.json(currentUser.sessions);
+})
 
-  const commandsHistory = await fetchChatHistory(c.env, durableId);
+// Session State by ID
+app.get('/sessions/:sessionId', async (context) => {
+  const sessionId = context.req.param('sessionId');
+  const currentUser = context.get('currentUser') as User;
 
-  return c.json(commandsHistory);
+  await currentUser.loadSessionFromKV(context, sessionId);
+
+  return context.json(currentUser.getSession(sessionId));
 });
 
-app.get('/state/:sessionId', async (c) => {
-  const sessionId = c.req.param('sessionId');
-  const currentUser = c.get('currentUser') as User;
+// Session State by ID
+app.get('/sessions/:sessionId/characters/active', async (context) => {
+  const sessionId = context.req.param('sessionId');
+  const currentUser = context.get('currentUser') as User;
 
-  const durableId = c.env.COMMAND_INC_DO.idFromName(`${currentUser.id}_${sessionId}`);
+  await currentUser.loadSessionFromKV(context, sessionId);
 
-  const latestCommandFromChat = await fetchChatLatest(c.env, durableId);
-  // or fetch from DO or KV (if DO deatached)
+  const session = currentUser.getSession(sessionId);
 
-  return c.json(latestCommandFromChat);
+  let activeCharacters:string[] = []
+
+  if (session) {
+    activeCharacters = getActiveCharacters(session);
+  }
+
+  return context.json(activeCharacters);
 });
 
-app.get('/characters/active', async (c) => {
-  const currentUser = c.get('currentUser') as User;
-
-  const durableId = c.env.COMMAND_INC_DO.idFromName(`${currentUser.id}`);
-
-  const activeCharacters = await fetchActiveCharacters(c.env, durableId);
-
-  return c.json(activeCharacters);
-});
+// Logs
+app.get('/logs', async (context) => {
+  const logs = await fetchLogs(context);
+  return context.json(logs);
+})
 
 export default app;
 

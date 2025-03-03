@@ -1,15 +1,15 @@
 import { z } from 'zod';
-import { Command, createCommand } from '../models/Command';
-import { dumpCommand } from '../services/dumpCommand';
+import { Command, CommandSchema } from '../models/Command';
 import { fetchFakeCommandData } from '../services/fetchFakeCommandData';
 import { User } from '../models/User';
-import { activatedCharacter } from '../services/activedCharacter';
-import { deactivatedCharacter } from '../services/deactivedCharacter';
+import { SessionEvent } from '../models/Session';
+import { createSessionEvent } from '../services/createSessionEvent';
+import { parseCommandFromWebSocketData } from '../common/commandParser';
 
 export class CommandIncDO {
   state: DurableObjectState;
   env: any;
-  commands: Command[];
+  commands: SessionEvent[];
   clients: Set<WebSocket>;
 
   constructor(state: DurableObjectState, env: any) {
@@ -19,18 +19,11 @@ export class CommandIncDO {
     this.clients = new Set();
   }
 
-  async sendCommand(command: Command, currentUser: User): Promise<void> {
-    this.commands.push(command);
+  async sendEvent(command: Command, currentUser: User): Promise<void> {
+    const event: SessionEvent = createSessionEvent(command);
 
-    dumpCommand(this.env, this.state.id, command);
-
-    const durableId = this.env.COMMAND_INC_DO.idFromName(`${currentUser.id}`);
-
-    if (command.activatedCharacter) {
-      activatedCharacter(this.env, durableId, command);
-    } else {
-      deactivatedCharacter(this.env, durableId, command);
-    }
+    this.commands.push(event);
+    currentUser.addEvent(this.env, this.state.id, event);
   }
 
   async fetch(request: Request): Promise<Response> {
@@ -43,7 +36,8 @@ export class CommandIncDO {
 
     if (currentUserHeader) {
       try {
-        currentUser = JSON.parse(currentUserHeader) as User;
+        const userData = JSON.parse(currentUserHeader);
+        currentUser = User.fromJSON(userData);
       } catch (err) {
         return new Response('Invalid user data', { status: 400 });
       }
@@ -55,14 +49,14 @@ export class CommandIncDO {
 
     server.addEventListener('message', async (event) => {
       try {
-        const command = createCommand(event.data);
-        await this.sendCommand(command, currentUser);
+        const command = parseCommandFromWebSocketData(event.data);
+        this.sendEvent(command, currentUser);
 
         for (const ws of this.clients) {
           try {
             const fakeResponse = await fetchFakeCommandData(command);
             ws.send(
-              JSON.stringify({ type: 'result', data: fakeResponse, from: currentUser.email }),
+              JSON.stringify({ type: 'result', data: fakeResponse, from: currentUser.id, session_id: this.state.id }),
             );
           } catch (err) {
             ws.close();
@@ -73,7 +67,7 @@ export class CommandIncDO {
         if (error instanceof z.ZodError) {
           for (const ws of this.clients) {
             try {
-              ws.send(JSON.stringify(error.errors));
+              ws.send(JSON.stringify(error));
             } catch (err) {
               ws.close();
               this.clients.delete(ws);

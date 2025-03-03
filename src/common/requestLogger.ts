@@ -4,7 +4,7 @@ interface Bindings {
   COMMAND_INC_LOGS: KVNamespace;
 }
 
-async function requestLogger(c: Context<{ Bindings: Bindings }>, next: Next) {
+export async function requestLogger(c: Context<{ Bindings: Bindings }>, next: Next) {
   const { method, url } = c.req;
   const body = await c.req.text();
 
@@ -21,5 +21,3 @@ async function requestLogger(c: Context<{ Bindings: Bindings }>, next: Next) {
 
   await next();
 }
-
-export { requestLogger };
