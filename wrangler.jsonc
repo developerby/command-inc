@@ -6,7 +6,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "command-inc",
   "main": "src/index.ts",
-  "compatibility_date": "2025-02-24",
+  "compatibility_date": "2025-02-14",
   "observability": {
     "enabled": true,
   },
@@ -16,7 +16,6 @@
   "kv_namespaces": [
     { "binding": "COMMAND_INC_LOGS", "id": "396768e4e8f94950ba21582f51e6a802" },
     { "binding": "COMMAND_INC_HISTORY", "id": "511ad8458ef3463f999dfa5d16dcf546" },
-    { "binding": "COMMAND_INC_CHARACTERS", "id": "dc76d9ea21f7490889d9e37ced067b03" },
   ],
   "migrations": [
     {

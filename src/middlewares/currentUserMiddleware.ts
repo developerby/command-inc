@@ -1,7 +1,7 @@
 import { Context } from 'hono';
 import { env } from 'hono/adapter';
 import { bearerAuth } from 'hono/bearer-auth';
-import { fetchUserByJWT, User } from '../models/User';
+import { User } from '../models/User';
 
 export const currentUserMiddleware = async (c: Context, next: () => Promise<void>) => {
   const authHeader = c.req.header('Authorization');
@@ -12,7 +12,7 @@ export const currentUserMiddleware = async (c: Context, next: () => Promise<void
     const token = authHeader.split(' ')[1];
 
     if (token == JWT_TOKEN) {
-      const user = fetchUserByJWT(token) as User;
+      const user = User.fromJSON({ id: "1" }) as User;
 
       c.set('currentUser', user);
     }
