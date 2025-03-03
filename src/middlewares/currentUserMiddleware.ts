@@ -12,7 +12,7 @@ export const currentUserMiddleware = async (c: Context, next: () => Promise<void
     const token = authHeader.split(' ')[1];
 
     if (token == JWT_TOKEN) {
-      const user = User.fromJSON({ id: "1" }) as User;
+      const user = User.fromJSON({ id: '1' }) as User;
 
       c.set('currentUser', user);
     }

@@ -56,7 +56,12 @@ export class CommandIncDO {
           try {
             const fakeResponse = await fetchFakeCommandData(command);
             ws.send(
-              JSON.stringify({ type: 'result', data: fakeResponse, from: currentUser.id, session_id: this.state.id }),
+              JSON.stringify({
+                type: 'result',
+                data: fakeResponse,
+                from: currentUser.id,
+                session_id: this.state.id,
+              }),
             );
           } catch (err) {
             ws.close();

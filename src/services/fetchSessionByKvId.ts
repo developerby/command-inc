@@ -8,7 +8,7 @@ export default async function fetchSessionByKvId(
 ): Promise<Session> {
   const currentUser: User = context.get('currentUser');
   const prefix = `chats::${currentUser.id}::${sessionId}::`;
-  
+
   try {
     const sessionKeys = await context.env.COMMAND_INC_HISTORY.list({ prefix });
     const events: SessionEvent[] = [];

@@ -30,7 +30,7 @@ app.get('/sessions', async (context) => {
   await currentUser.loadSessionsFromKV(context);
 
   return context.json(currentUser.sessions);
-})
+});
 
 // Session State by ID
 app.get('/sessions/:sessionId', async (context) => {
@@ -51,7 +51,7 @@ app.get('/sessions/:sessionId/characters/active', async (context) => {
 
   const session = currentUser.getSession(sessionId);
 
-  let activeCharacters:string[] = []
+  let activeCharacters: string[] = [];
 
   if (session) {
     activeCharacters = getActiveCharacters(session);
@@ -64,7 +64,7 @@ app.get('/sessions/:sessionId/characters/active', async (context) => {
 app.get('/logs', async (context) => {
   const logs = await fetchLogs(context);
   return context.json(logs);
-})
+});
 
 export default app;
 
